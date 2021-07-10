@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for copilot.
 GH_REPO="https://github.com/aws/copilot-cli"
 TOOL_NAME="copilot"
 TOOL_TEST="copilot --help"
@@ -31,7 +30,6 @@ list_github_tags() {
 }
 
 list_all_versions() {
-  # TODO: Adapt this. By default we simply list the tag names from GitHub releases.
   # Change this function if copilot has other means of determining installable versions.
   list_github_tags
 }
@@ -40,10 +38,13 @@ download_release() {
   local version filename url
   version="$1"
   filename="$2"
+  platform=$(get_platform)
+  ext=""
+  if [ "$platform" == "windows" ]; then
+    ext=".exe"
+  fi
 
-  # TODO: Adapt the release URL convention for copilot
-  url="$GH_REPO/archive/v${version}.tar.gz"
-
+  url="$GH_REPO/releases/download/v${version}/$TOOL_NAME-${platform}-v${version}$ext"
   echo "* Downloading $TOOL_NAME release $version..."
   curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
 }
@@ -58,10 +59,16 @@ install_version() {
   fi
 
   (
-    mkdir -p "$install_path"
-    cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
+    platform=$(get_platform)
+    ext=""
+    if [ "$platform" == "windows" ]; then
+      ext=".exe"
+    fi
 
-    # TODO: Asert copilot executable exists.
+    mkdir -p "$install_path/bin"
+    cp "$ASDF_DOWNLOAD_PATH/$TOOL_NAME$ext" "$install_path/bin/$TOOL_NAME$ext"
+    chmod +x "$install_path/bin/$TOOL_NAME$ext"
+
     local tool_cmd
     tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
     test -x "$install_path/bin/$tool_cmd" || fail "Expected $install_path/bin/$tool_cmd to be executable."
@@ -71,4 +78,19 @@ install_version() {
     rm -rf "$install_path"
     fail "An error ocurred while installing $TOOL_NAME $version."
   )
+}
+
+get_platform() {
+  local platform=""
+
+  case "$(uname | tr '[:upper:]' '[:lower:]')" in
+    darwin) platform="darwin" ;;
+    linux) platform="linux" ;;
+    windows) platform="windows" ;;
+    *)
+      fail "Platform '$(uname -m)' not supported!"
+      ;;
+  esac
+
+  echo -n $platform
 }
