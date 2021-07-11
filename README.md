@@ -7,6 +7,10 @@
 
 </div>
 
+# Build History
+
+[![Build history](https://buildstats.info/github/chart/NeoHsu/asdf-copilot?branch=main)](https://github.com/NeoHsu/asdf-copilot/actions)
+
 # Contents
 
 - [Dependencies](#dependencies)
