@@ -7,30 +7,20 @@ on:
   pull_request:
 
 jobs:
-  shellcheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Install asdf dependencies
-        uses: asdf-vm/actions/install@v1
-
       - name: Run ShellCheck
-        run: scripts/shellcheck.bash
+        run: shellcheck -x bin/*
 
-  shellfmt:
-    runs-on: ubuntu-latest
+  format:
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Install asdf dependencies
-        uses: asdf-vm/actions/install@v1
-
-      - name: List file to shfmt
-        run: shfmt -f .
-
+      - name: Install shfmt
+        run: brew install shfmt
       - name: Run shfmt
-        run: scripts/shfmt.bash
-
+        run: shfmt -d -i 2 -ci .
