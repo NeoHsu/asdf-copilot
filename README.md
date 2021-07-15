@@ -28,22 +28,22 @@
 Plugin:
 
 ```shell
-asdf plugin add copilot
+asdf plugin add aws-copilot
 # or
-asdf plugin add copilot https://github.com/NeoHsu/asdf-copilot.git
+asdf plugin add aws-copilot https://github.com/NeoHsu/asdf-copilot.git
 ```
 
 copilot:
 
 ```shell
 # Show all installable versions
-asdf list-all copilot
+asdf list-all aws-copilot
 
 # Install specific version
-asdf install copilot latest
+asdf install aws-copilot latest
 
 # Set a version globally (on your ~/.tool-versions file)
-asdf global copilot latest
+asdf global aws-copilot latest
 
 # Now copilot commands are available
 copilot --help
