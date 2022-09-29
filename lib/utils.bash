@@ -35,17 +35,23 @@ list_all_versions() {
 }
 
 download_release() {
-  local version filename url
+  local version filename url platform arch platform_type ext
   version="$1"
   filename="$2"
   platform=$(get_platform)
+  arch=$(get_arch)
+  platform_type=$platform
   ext=""
   if [ "$platform" == "windows" ]; then
     ext=".exe"
   fi
+  if { [ "$platform" == "darwin" ] && [ $(numberize_version $version) -ge $(numberize_version "1.10.1") ]; } \
+  || { [ "$platform" == "linux" ] && [ $(numberize_version $version) -ge $(numberize_version "0.3.0") ]; }; then
+    platform_type="${platform}-${arch}"
+  fi
 
-  url="$GH_REPO/releases/download/v${version}/$TOOL_NAME-${platform}-v${version}$ext"
-  echo "* Downloading $TOOL_NAME release $version..."
+  url="$GH_REPO/releases/download/v${version}/$TOOL_NAME-${platform_type}-v${version}$ext"
+  echo "* Downloading $TOOL_NAME release $version from $url ..."
   curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
 }
 
@@ -88,9 +94,30 @@ get_platform() {
     linux) platform="linux" ;;
     windows) platform="windows" ;;
     *)
-      fail "Platform '$(uname -m)' not supported!"
+      fail "Platform '$(uname)' not supported!"
       ;;
   esac
 
   echo -n $platform
+}
+
+get_arch() {
+  local arch=""
+  local platform=$(get_platform)
+
+  if [ "$platform" != "windows" ]; then
+    case "$(uname -m)" in
+      x86_64|amd64) arch="amd64" ;;
+      arm64) arch="arm64" ;;
+      *)
+        fail "Arch '$(uname -m)' not supported!"
+        ;;
+    esac
+  fi
+
+  echo -n $arch
+}
+
+numberize_version() {
+  echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'
 }
